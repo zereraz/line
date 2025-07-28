@@ -35,8 +35,13 @@ export default function Dashboard() {
     <Box flexDirection="column" padding={2}>
       {/* Welcome Header */}
       <Box flexDirection="column" marginBottom={2}>
-        <Box>
-          <Text color="cyan" bold>LINE DASHBOARD</Text>
+        <Box flexDirection="column">
+          <Text color="cyan" bold>
+{`┬  ┬┌┐┌┌─┐
+│  ││││├┤ 
+┴─┘┴┘└┘└─┘`}
+          </Text>
+          <Text color="cyan" bold>DASHBOARD</Text>
         </Box>
         <Text color="gray" dimColor>Personal Linear command center</Text>
       </Box>

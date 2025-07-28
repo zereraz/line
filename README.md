@@ -1,5 +1,11 @@
 # Line CLI
 
+```
+┬  ┬┌┐┌┌─┐
+│  ││││├┤ 
+┴─┘┴┘└┘└─┘
+```
+
 Professional Linear project management from your terminal.
 
 ## Installation
