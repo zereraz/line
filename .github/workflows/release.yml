@@ -1,0 +1,116 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Bun
+      uses: oven-sh/setup-bun@v1
+      with:
+        bun-version: latest
+        
+    - name: Install dependencies
+      run: bun install
+      
+    - name: Run tests
+      run: bun test
+      
+    - name: Build binaries
+      run: bun run build:all
+      
+    - name: List built files
+      run: ls -la dist/
+      
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Line CLI ${{ github.ref }}
+        body: |
+          ## Line CLI Release
+          
+          Professional Linear project management CLI tool.
+          
+          ### Installation
+          ```bash
+          curl -fsSL https://raw.githubusercontent.com/zereraz/line/main/install.sh | bash
+          ```
+          
+          ### What's New
+          - Professional terminal UI
+          - Interactive mode with keyboard navigation
+          - SQLite caching for offline-first experience
+          - Comprehensive test suite
+          - Cross-platform binaries
+          
+          ### Supported Platforms
+          - Linux (x64, arm64)
+          - macOS (x64, arm64)
+          - Windows (x64)
+          
+          Choose the binary for your platform below.
+        draft: false
+        prerelease: false
+        
+    - name: Upload Linux x64
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./dist/line-linux-x64
+        asset_name: line-linux-x64
+        asset_content_type: application/octet-stream
+        
+    - name: Upload Linux arm64
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./dist/line-linux-arm64
+        asset_name: line-linux-arm64
+        asset_content_type: application/octet-stream
+        
+    - name: Upload macOS x64
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./dist/line-darwin-x64
+        asset_name: line-darwin-x64
+        asset_content_type: application/octet-stream
+        
+    - name: Upload macOS arm64
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./dist/line-darwin-arm64
+        asset_name: line-darwin-arm64
+        asset_content_type: application/octet-stream
+        
+    - name: Upload Windows x64
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./dist/line-windows-x64.exe
+        asset_name: line-windows-x64.exe
+        asset_content_type: application/octet-stream
