@@ -36,27 +36,27 @@ export const colors = {
   backlog: '#9333ea',      // Purple-600
 };
 
-// Icons - Professional and minimal
+// Icons - Unicode box drawing + shapes for maximum compatibility
 export const icons = {
-  // Priority
-  urgent: '●',
-  high: '●', 
-  normal: '●',
-  low: '●',
-  none: '○',
+  // Priority (different shapes + colors)
+  urgent: '▲',      // Red triangle - high urgency
+  high: '◆',        // Yellow diamond - important  
+  normal: '●',      // Blue circle - standard
+  low: '▽',         // Gray inverted triangle - low priority
+  none: '○',        // Gray outline circle - no priority
   
-  // Status
-  todo: '○',
-  inProgress: '●',
-  done: '✓',
-  backlog: '◦',
+  // Status (clear visual progression)
+  todo: '□',        // Empty square - not started
+  inProgress: '◐',  // Half-filled circle - in progress
+  done: '■',        // Filled square - completed
+  backlog: '◦',     // Small circle - backlog
   
-  // General
-  dashboard: '■',
-  issues: '▫',
-  teams: '▸',
-  projects: '▪',
-  search: '?',
+  // General navigation
+  dashboard: '▦',   // Dashboard grid
+  issues: '▤',      // Issues list
+  teams: '▶',       // Teams arrow
+  projects: '▣',    // Projects folder
+  search: '◈',      // Search diamond
   user: '◆',
   loading: '⟳',
   error: '!',
@@ -70,6 +70,42 @@ export const icons = {
   down: '↓',
   enter: '⏎',
 };
+
+// Helper functions for colored icons
+export function getPriorityIcon(priority: string) {
+  switch (priority.toLowerCase()) {
+    case 'urgent':
+      return { icon: icons.urgent, color: 'red' };
+    case 'high':
+      return { icon: icons.high, color: 'yellow' };
+    case 'normal':
+    case 'medium':
+      return { icon: icons.normal, color: 'blue' };
+    case 'low':
+      return { icon: icons.low, color: 'gray' };
+    default:
+      return { icon: icons.none, color: 'gray' };
+  }
+}
+
+export function getStatusIcon(status: string) {
+  switch (status.toLowerCase()) {
+    case 'todo':
+    case 'to do':
+      return { icon: icons.todo, color: 'gray' };
+    case 'in progress':
+    case 'in_progress':
+    case 'progress':
+      return { icon: icons.inProgress, color: 'blue' };
+    case 'done':
+    case 'completed':
+      return { icon: icons.done, color: 'green' };
+    case 'backlog':
+      return { icon: icons.backlog, color: 'magenta' };
+    default:
+      return { icon: icons.todo, color: 'gray' };
+  }
+}
 
 // Styled components
 export function Header({ children, icon }: { children: React.ReactNode; icon?: string }) {
