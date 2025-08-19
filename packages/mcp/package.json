@@ -1,0 +1,46 @@
+{
+  "name": "@linecli/mcp",
+  "version": "0.0.2",
+  "description": "Line CLI MCP Server - Provides project management tools for Claude Code via Model Context Protocol",
+  "type": "module",
+  "main": "./src/index.ts",
+  "bin": {
+    "line-mcp": "./src/index.ts"
+  },
+  "scripts": {
+    "dev": "bun --hot src/index.ts",
+    "test": "bun test",
+    "build": "echo 'No build needed - Bun runs TypeScript directly'"
+  },
+  "files": [
+    "src/",
+    "README.md"
+  ],
+  "keywords": [
+    "mcp",
+    "model-context-protocol", 
+    "claude",
+    "ai",
+    "project-management",
+    "issues",
+    "tasks",
+    "productivity",
+    "line-cli"
+  ],
+  "author": "Zereraz",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/zereraz/line.git",
+    "directory": "packages/mcp"
+  },
+  "dependencies": {
+    "bun-types": "latest"
+  },
+  "engines": {
+    "bun": ">=1.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
