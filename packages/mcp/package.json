@@ -1,6 +1,6 @@
 {
   "name": "@linecli/mcp",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Line CLI MCP Server - Provides project management tools for Claude Code via Model Context Protocol",
   "type": "module",
   "main": "./src/index.ts",
