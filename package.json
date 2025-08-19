@@ -1,6 +1,6 @@
 {
   "name": "@linecli/cli",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Line CLI - Universal project management for AI orchestration and terminal-first workflows",
   "type": "module",
   "main": "./index.ts",
