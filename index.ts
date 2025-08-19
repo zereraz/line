@@ -5,8 +5,12 @@ import { parseArgs } from 'util';
 import App from './src/App.tsx';
 import InteractiveMode from './src/components/InteractiveMode.tsx';
 
+// Check if this is a 'line' command to allow unknown options
+const rawArgs = Bun.argv.slice(2);
+const isLineCommand = rawArgs[0] === 'line';
+
 const args = parseArgs({
-  args: Bun.argv.slice(2),
+  args: rawArgs,
   options: {
     help: {
       type: 'boolean',
@@ -20,43 +24,75 @@ const args = parseArgs({
       type: 'boolean',
       short: 'i',
     },
+    json: {
+      type: 'boolean',
+      short: 'j',
+    },
     'mcp-server': {
       type: 'boolean',
     },
   },
   allowPositionals: true,
+  strict: !isLineCommand, // Allow unknown options for line commands
 });
 
 if (args.values.help) {
   console.log(`
-line - Linear-inspired project management CLI
+line - Universal project management CLI
 
 Usage:
-  line [command] [options]
+  line                 Start interactive mode (default)
+  line <command>       Run command directly
 
 Commands:
   issues               List all issues
   issue <id>           Show issue details
   create               Create new issue
+  search <query>       Search issues and comments
   teams                List teams
   projects             List projects
   me                   Show my assigned issues
-  search <query>       Search issues
-  setup                Setup line as Claude Code MCP server
-  sync                 Sync data from Linear (API or MCP)
-  
-Interactive Mode:
-  line -i              Start interactive mode
-  line --interactive   Start interactive mode
+  setup                Configure backend integration
+  sync                 Sync data from configured backends
 
-MCP Server Mode:
-  line --mcp-server    Start MCP server for Claude Code integration
-  
+Line Task Management (Native):
+  line                 Show all Line tasks (default: line list)
+  line create <title>  Create new Line task
+  line list            List Line tasks
+  line show <id>       Show Line task details
+  line update <id>     Update Line task
+  line delete <id>     Delete Line task
+  line me              Show my Line tasks
+  line depend <id>     Add task dependency
+  line stats           Show task statistics
+
 Options:
   -h, --help          Show help
   -v, --version       Show version
-  -i, --interactive   Start interactive mode
-      --mcp-server    Start MCP server mode
+  -i, --interactive   Force interactive mode (default behavior)
+  -j, --json          Output in JSON format (for programmatic use)
+      --mcp-server    Start MCP server for Claude Code integration
+
+Storage:
+  SQLite Database      Fast, offline-first local storage (~/.line/data.db)
+  
+MCP Integration:
+  Claude Code          Install: claude mcp add line npx @linecli/mcp@latest
+
+Examples:
+  line                 # Interactive mode (default)
+  line issues          # Show issues and exit
+  line search "auth"   # Search across issues and comments
+  line --json issues   # Output issues as JSON
+  line issue ABC-123   # Show specific issue details
+
+Line Task Examples:
+  line create "Fix authentication bug" --type=issue --priority=high
+  line list --status=todo
+  line show LINE-001
+  line update LINE-001 --status=in_progress
+  line delete LINE-001
+  line depend LINE-002 --on=LINE-001
   `);
   process.exit(0);
 }
@@ -81,14 +117,32 @@ if (args.values['mcp-server']) {
 
 let app;
 
-if (args.values.interactive) {
-  // Start interactive mode only when explicitly requested
+// Determine if we should run in interactive mode or command mode
+const hasCommand = args.positionals.length > 0;
+const forceInteractive = args.values.interactive;
+const useInteractiveMode = !hasCommand || forceInteractive;
+
+if (useInteractiveMode && !args.values.json) {
+  // Start interactive mode (default when no command provided)
   app = render(React.createElement(InteractiveMode));
 } else {
-  // Start in single command mode (default)
+  // Start in single command mode
   const command = args.positionals[0] || 'dashboard';
-  const subArgs = args.positionals.slice(1);
-  app = render(React.createElement(App, { command, args: subArgs }));
+  let subArgs: string[];
+  
+  if (command === 'line') {
+    // For line commands, pass the raw arguments (excluding the first 'line' command)
+    // This preserves flags like --priority=high that parseArgs strips out
+    subArgs = rawArgs.slice(1);
+  } else {
+    subArgs = args.positionals.slice(1);
+  }
+  
+  app = render(React.createElement(App, { 
+    command, 
+    args: subArgs, 
+    jsonOutput: args.values.json 
+  }));
 }
 
 // Graceful exit handling
