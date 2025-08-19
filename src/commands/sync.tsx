@@ -17,7 +17,7 @@ export default function Sync({}: SyncProps) {
 
         // Start sync
         setStatus('syncing');
-        setMessage('🔄 Syncing all data from Linear...');
+        setMessage('Syncing all data from configured backend...');
         
         await Promise.all([
           linearService.getIssues(true),
@@ -26,10 +26,10 @@ export default function Sync({}: SyncProps) {
         ]);
 
         setStatus('complete');
-        setMessage('✅ Successfully synced all data from Linear!');
+        setMessage('✓ Successfully synced all data from backend!');
       } catch (error) {
         setStatus('error');
-        setMessage(`❌ Sync failed: ${error instanceof Error ? error.message : String(error)}`);
+        setMessage(`✗ Sync failed: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
 
@@ -39,7 +39,7 @@ export default function Sync({}: SyncProps) {
   return (
     <Box flexDirection="column" padding={1}>
       <Text bold color="blue">
-        🔄 Line Data Sync
+Line Data Sync
       </Text>
       <Newline />
       
@@ -64,9 +64,9 @@ export default function Sync({}: SyncProps) {
       {status === 'complete' && (
         <Box flexDirection="column" marginTop={1}>
           <Newline />
-          <Text color="green" bold>✅ Sync Complete!</Text>
+          <Text color="green" bold>✓ Sync Complete!</Text>
           <Newline />
-          <Text>Your local cache has been updated with the latest data from Linear.</Text>
+          <Text>Your local cache has been updated with the latest data from your backend.</Text>
           <Newline />
           <Text color="blue">Data synced:</Text>
           <Text>• Issues (with status, assignees, teams)</Text>
@@ -80,9 +80,9 @@ export default function Sync({}: SyncProps) {
       {status === 'error' && (
         <Box flexDirection="column" marginTop={1}>
           <Newline />
-          <Text color="red" bold>❌ Sync Failed</Text>
+          <Text color="red" bold>✗ Sync Failed</Text>
           <Newline />
-          <Text>To sync data, ensure you have Linear API access or MCP configured.</Text>
+          <Text>To sync data, ensure you have a backend configured (Linear MCP, GitHub, etc.).</Text>
         </Box>
       )}
     </Box>

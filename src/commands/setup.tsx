@@ -7,7 +7,7 @@ interface SetupProps {}
 
 export default function Setup({}: SetupProps) {
   const [status, setStatus] = useState<'checking' | 'migrating' | 'complete' | 'error'>('checking');
-  const [message, setMessage] = useState('Checking Claude Code MCP configuration...');
+  const [message, setMessage] = useState('Checking backend integration configuration...');
   const [hasLinearMCP, setHasLinearMCP] = useState(false);
   const [linePath, setLinePath] = useState<string>('');
 
@@ -22,15 +22,15 @@ export default function Setup({}: SetupProps) {
         
         if (!foundLinePath) {
           setStatus('error');
-          setMessage('❌ Line CLI not found in PATH. Please install line first.');
+          setMessage('✗ Line CLI not found in PATH. Please install line first.');
           return;
         }
 
-        // Step 2: Check for existing Linear MCP
-        setMessage('Checking for existing Linear MCP server...');
+        // Step 2: Check for existing MCP servers that might conflict
+        setMessage('Checking for existing MCP server configurations...');
         try {
           const mcpList = await $`claude mcp list`.text();
-          setHasLinearMCP(mcpList.includes('linear-server'));
+          setHasLinearMCP(mcpList.includes('linear-server') || mcpList.includes('line-server'));
         } catch (error) {
           // claude command might not exist or no MCP servers configured
           setHasLinearMCP(false);
@@ -40,32 +40,72 @@ export default function Setup({}: SetupProps) {
         setStatus('migrating');
         
         if (hasLinearMCP) {
-          setMessage('🔄 Removing existing Linear MCP server...');
+          setMessage('Removing existing conflicting MCP servers...');
           try {
+            // Remove both possible conflicting entries
             await $`claude mcp remove linear-server`;
+          } catch (error) {
+            // Might already be removed or not exist
+          }
+          try {
+            await $`claude mcp remove line-server`;
           } catch (error) {
             // Might already be removed or not exist
           }
         }
 
-        setMessage('🚀 Adding line as Linear MCP server...');
-        await $`claude mcp add linear-server -- ${foundLinePath} --mcp-server`;
+        setMessage('Configuring Line CLI as MCP server...');
+        await $`claude mcp add line-cli -- ${foundLinePath} --mcp-server`;
 
-        // Step 4: Verify setup
-        setMessage('✅ Verifying setup...');
+        // Step 4: Add permissions for Line CLI tools
+        setMessage('Adding tool permissions...');
+        const permissions = [
+          'mcp__line-server__list_issues',
+          'mcp__line-server__get_issue', 
+          'mcp__line-server__list_my_issues',
+          'mcp__line-server__list_teams',
+          'mcp__line-server__get_team',
+          'mcp__line-server__list_projects',
+          'mcp__line-server__get_project',
+          'mcp__line-server__search_issues',
+          'mcp__line-server__advanced_search',
+          'mcp__line-server__search_suggestions',
+          'mcp__line-server__list_comments',
+          'mcp__line-server__get_comment',
+          'mcp__line-server__add_comment',
+          'mcp__line-server__create_task',
+          'mcp__line-server__update_task',
+          'mcp__line-server__get_task',
+          'mcp__line-server__delete_task',
+          'mcp__line-server__list_tasks',
+          'mcp__line-server__assign_task',
+          'mcp__line-server__set_priority',
+          'mcp__line-server__add_dependency'
+        ];
+        
+        for (const permission of permissions) {
+          try {
+            await $`claude mcp allow ${permission}`;
+          } catch (error) {
+            // Permission might already exist or command might fail
+          }
+        }
+        
+        // Step 5: Verify setup
+        setMessage('Verifying setup...');
         const finalMcpList = await $`claude mcp list`.text();
         
-        if (finalMcpList.includes('linear-server')) {
+        if (finalMcpList.includes('line-cli')) {
           setStatus('complete');
-          setMessage('🎉 Successfully configured line as your Linear MCP server!');
+          setMessage('✓ Successfully configured Line CLI as MCP server!');
         } else {
           setStatus('error');
-          setMessage('❌ Setup verification failed. Please check Claude Code MCP configuration.');
+          setMessage('✗ Setup verification failed. Please check Claude Code MCP configuration.');
         }
 
       } catch (error) {
         setStatus('error');
-        setMessage(`❌ Setup failed: ${error instanceof Error ? error.message : String(error)}`);
+        setMessage(`✗ Setup failed: ${error instanceof Error ? error.message : String(error)}`);
       }
     }
 
@@ -75,7 +115,7 @@ export default function Setup({}: SetupProps) {
   return (
     <Box flexDirection="column" padding={1}>
       <Text bold color="blue">
-        🔧 Line Claude Code MCP Setup
+Line Backend Integration Setup
       </Text>
       <Newline />
       
@@ -100,16 +140,16 @@ export default function Setup({}: SetupProps) {
       {status === 'complete' && (
         <Box flexDirection="column" marginTop={1}>
           <Newline />
-          <Text color="green" bold>✅ Setup Complete!</Text>
+          <Text color="green" bold>✓ Setup Complete!</Text>
           <Newline />
-          <Text>Claude Code will now use line's local SQLite cache for Linear data.</Text>
+          <Text>AI tools can now use line's unified interface with your configured backends.</Text>
           <Newline />
           <Text color="blue">Next steps:</Text>
           <Text>• Run </Text>
           <Text color="cyan">line sync</Text>
           <Text> to populate your local cache</Text>
-          <Text>• Use Claude Code with Linear MCP tools as usual</Text>
-          <Text>• Enjoy faster, offline-capable Linear integration!</Text>
+          <Text>• Use AI assistants with integrated backend tools</Text>
+          <Text>• Enjoy faster, offline-capable project management!</Text>
           <Newline />
           <Text color="gray">Note: line will automatically sync data when needed (5-minute cache for issues)</Text>
         </Box>
@@ -118,11 +158,12 @@ export default function Setup({}: SetupProps) {
       {status === 'error' && (
         <Box flexDirection="column" marginTop={1}>
           <Newline />
-          <Text color="red" bold>❌ Setup Failed</Text>
+          <Text color="red" bold>✗ Setup Failed</Text>
           <Newline />
           <Text>Manual setup instructions:</Text>
           <Text color="cyan">claude mcp remove linear-server</Text>
-          <Text color="cyan">claude mcp add linear-server -- line --mcp-server</Text>
+          <Text color="cyan">claude mcp remove line-server</Text>
+          <Text color="cyan">claude mcp add line-cli -- line --mcp-server</Text>
           <Newline />
           <Text color="gray">If you need help, check the documentation or create an issue.</Text>
         </Box>

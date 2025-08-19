@@ -9,7 +9,8 @@
   },
   "scripts": {
     "test": "bun test",
-    "build": "echo 'No build needed - Bun runs TypeScript directly'"
+    "build": "echo 'No build needed - Bun runs TypeScript directly'",
+    "build:all": "bun run build.ts"
   },
   "files": [
     "index.ts",

@@ -6,7 +6,7 @@ export default function CreateIssue() {
     <Box flexDirection="column" padding={1}>
       <Text color="cyan" bold>🆕 Create New Issue</Text>
       <Box marginTop={1}>
-        <Text color="yellow">Feature coming soon! Will integrate with Linear MCP create_issue command.</Text>
+        <Text color="yellow">Feature coming soon! Will integrate with configured backend APIs.</Text>
       </Box>
     </Box>
   );

@@ -13,7 +13,7 @@ export default function TeamsList() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Mock data - will replace with Linear MCP list_teams call
+    // Mock data - will integrate with backend APIs (Linear MCP, GitHub, etc.)
     setTimeout(() => {
       setTeams([
         { id: '1', name: 'Engineering', key: 'ENG', description: 'Product engineering team' },

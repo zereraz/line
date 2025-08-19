@@ -1,17 +1,17 @@
-# Claude Agent Guide for Line CLI
+# AI Assistant Guide for Line CLI
 
-This guide teaches Claude agents how to effectively use the Line CLI tool for Linear project management.
+This guide teaches AI assistants how to effectively use the Line CLI tool for universal project management.
 
 ## Overview
 
-Line is a CLI tool that connects to Linear via MCP commands, providing offline-first project management with SQLite caching. Claude agents can use this tool to:
+Line is a universal CLI tool that supports multiple backends (Linear via MCP, GitHub Issues, standalone), providing offline-first project management with SQLite caching. AI assistants can use this tool to:
 
 - Manage issues and projects
 - Track team workflows
 - Search and organize tasks
-- Create and update Linear items
+- Create and update items across backends
 
-## Available Commands for Claude Agents
+## Available Commands for AI Assistants
 
 ### Basic Usage Patterns
 
@@ -38,7 +38,10 @@ line projects
 
 ### MCP Integration Commands
 
-The Line CLI automatically uses these MCP Linear commands:
+Line supports two backend systems through MCP:
+
+#### Linear Backend (External Issues)
+When using Linear backend, Line automatically uses these MCP commands:
 
 | CLI Command | MCP Command Used | Purpose |
 |-------------|------------------|---------|
@@ -49,7 +52,28 @@ The Line CLI automatically uses these MCP Linear commands:
 | `line projects` | `mcp__linear_server__list_projects` | List projects |
 | `line search <query>` | Local SQLite + `mcp__linear_server__list_issues` | Search functionality |
 
-## Claude Agent Workflows
+#### Line Native Tasks (Internal Task Management)
+Line also provides comprehensive native task management through MCP:
+
+| MCP Command | Purpose | Parameters |
+|-------------|---------|------------|
+| `mcp__line_server__create_task` | Create new Line task | `title*`, `description`, `type`, `priority`, `assignee`, `due_date`, `parent_id`, `labels` |
+| `mcp__line_server__update_task` | Update existing task | `id*`, `title`, `description`, `type`, `status`, `priority`, `assignee`, `time_tracked`, `progress`, `due_date`, `parent_id` |
+| `mcp__line_server__get_task` | Get specific task | `id*` |
+| `mcp__line_server__delete_task` | Delete task | `id*` |
+| `mcp__line_server__list_tasks` | List tasks with filters | `status`, `type`, `assignee`, `parent_only` |
+| `mcp__line_server__assign_task` | Assign task to user | `id*`, `assignee*` |
+| `mcp__line_server__set_priority` | Set task priority | `id*`, `priority*` (urgent/high/normal/low) |
+| `mcp__line_server__add_dependency` | Add task dependency | `task_id*`, `depends_on_id*` |
+
+*Required parameters
+
+#### Task Types and Statuses
+- **Types**: `issue`, `goal`, `habit`, `learning`
+- **Statuses**: `todo`, `in_progress`, `review`, `done`  
+- **Priorities**: `urgent`, `high`, `normal`, `low`
+
+## AI Assistant Workflows
 
 ### 1. Project Status Check
 
@@ -64,7 +88,7 @@ line issues
 line teams
 ```
 
-**Output Parsing**: Line provides structured, colored output that Claude can easily parse:
+**Output Parsing**: Line provides structured, colored output that AI assistants can easily parse:
 - Issue IDs (e.g., LIN-123)
 - Status indicators (In Progress, Todo, Done)
 - Priority levels (🔴 Urgent, 🟡 High, 🔵 Normal, ⚪ Low)
@@ -96,9 +120,9 @@ line projects
 line search "Engineering team"
 ```
 
-## Advanced Claude Integration
+## Advanced AI Integration
 
-### Using Line in Claude Code Sessions
+### Using Line in AI Assistant Sessions
 
 1. **Project Analysis**:
    ```bash
@@ -127,7 +151,7 @@ line search "Engineering team"
 
 ### Parsing Line Output
 
-Line provides consistent, structured output that Claude can parse:
+Line provides consistent, structured output that AI assistants can parse:
 
 ```
 📝 All Issues (3)
@@ -145,10 +169,10 @@ LIN-124  Implement new dashboard       Todo       Alice       Product     🟡 H
 
 ## MCP Command Reference
 
-### Core Issue Management
+### Linear Backend Commands
 
 ```typescript
-// These MCP commands are automatically used by Line:
+// These MCP commands are automatically used by Line for Linear integration:
 
 // List issues with filtering
 mcp__linear_server__list_issues({
@@ -167,6 +191,131 @@ mcp__linear_server__get_issue({
 // Get my assigned issues  
 mcp__linear_server__list_my_issues({
   limit?: number
+})
+```
+
+### Line Native Task Commands
+
+```typescript
+// Claude Code can directly use these MCP commands for Line task management:
+
+// Create new task
+mcp__line_server__create_task({
+  title: string,                    // Required
+  description?: string,
+  type?: 'issue' | 'goal' | 'habit' | 'learning',
+  priority?: 'urgent' | 'high' | 'normal' | 'low',
+  assignee?: string,
+  due_date?: string,               // ISO string
+  parent_id?: string,              // For subtasks
+  labels?: string[]                // Label IDs
+})
+
+// Update existing task
+mcp__line_server__update_task({
+  id: string,                      // Required
+  title?: string,
+  description?: string,
+  type?: 'issue' | 'goal' | 'habit' | 'learning',
+  status?: 'todo' | 'in_progress' | 'review' | 'done',
+  priority?: 'urgent' | 'high' | 'normal' | 'low',
+  assignee?: string,
+  time_tracked?: number,           // Minutes
+  progress?: number,               // 0-100
+  due_date?: string,
+  parent_id?: string
+})
+
+// Get task details
+mcp__line_server__get_task({
+  id: string                       // Required (LINE-001, LINE-002, etc.)
+})
+
+// List tasks with filtering
+mcp__line_server__list_tasks({
+  status?: 'todo' | 'in_progress' | 'review' | 'done',
+  type?: 'issue' | 'goal' | 'habit' | 'learning',
+  assignee?: string,
+  parent_only?: boolean            // Only top-level tasks
+})
+
+// Quick assignment
+mcp__line_server__assign_task({
+  id: string,                      // Required
+  assignee: string                 // Required
+})
+
+// Set priority
+mcp__line_server__set_priority({
+  id: string,                      // Required
+  priority: 'urgent' | 'high' | 'normal' | 'low'  // Required
+})
+
+// Add dependency
+mcp__line_server__add_dependency({
+  task_id: string,                 // Task that depends on another
+  depends_on_id: string            // Task that is depended upon
+})
+
+// Delete task
+mcp__line_server__delete_task({
+  id: string                       // Required
+})
+```
+
+### Example Task Management Workflow
+
+```typescript
+// 1. Create a new feature task
+const featureTask = await mcp__line_server__create_task({
+  title: "Implement user authentication",
+  description: "Add JWT-based authentication to the API",
+  type: "issue",
+  priority: "high",
+  assignee: "Claude"
+})
+
+// 2. Create subtasks
+const subTask1 = await mcp__line_server__create_task({
+  title: "Design authentication schema",
+  type: "issue",
+  priority: "high",
+  parent_id: featureTask.id,
+  assignee: "Claude"
+})
+
+const subTask2 = await mcp__line_server__create_task({
+  title: "Implement JWT middleware",
+  type: "issue", 
+  priority: "normal",
+  parent_id: featureTask.id,
+  assignee: "Claude"
+})
+
+// 3. Add dependency (JWT middleware depends on schema)
+await mcp__line_server__add_dependency({
+  task_id: subTask2.id,
+  depends_on_id: subTask1.id
+})
+
+// 4. Start working on the first task
+await mcp__line_server__update_task({
+  id: subTask1.id,
+  status: "in_progress"
+})
+
+// 5. Track progress
+await mcp__line_server__update_task({
+  id: subTask1.id,
+  progress: 75,
+  time_tracked: 120  // 2 hours in minutes
+})
+
+// 6. Complete the task
+await mcp__line_server__update_task({
+  id: subTask1.id,
+  status: "done",
+  progress: 100
 })
 ```
 
@@ -291,7 +440,7 @@ echo -e "\n=== Critical Issues ==="
 line search "critical"
 ```
 
-## Best Practices for Claude Agents
+## Best Practices for AI Assistants
 
 1. **Always start with `line` or `line me`** for context
 2. **Use search liberally** - Line's search is fast and comprehensive
@@ -302,7 +451,7 @@ line search "critical"
 
 ## Testing and Validation
 
-Line includes comprehensive tests that Claude can reference:
+Line includes comprehensive tests that AI assistants can reference:
 
 ```bash
 # Run all tests to verify functionality
@@ -343,7 +492,7 @@ line issues --force-sync  # Force fresh data from Linear
 
 ## Future Enhancements
 
-Planned features that will expand Claude integration:
+Planned features that will expand AI assistant integration:
 
 - Issue creation: `line create --title "Bug fix" --team Engineering`
 - Issue editing: `line edit LIN-123 --status "In Progress"`
@@ -354,4 +503,4 @@ Planned features that will expand Claude integration:
 
 ## Summary
 
-Line provides Claude agents with a powerful, tested, offline-first interface to Linear project management. The tool abstracts MCP complexity while providing rich, parseable output and comprehensive functionality for project coordination and issue management.
+Line provides AI assistants with a powerful, tested, offline-first interface to universal project management. The tool supports multiple backends while providing rich, parseable output and comprehensive functionality for project coordination and issue management.

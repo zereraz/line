@@ -106,9 +106,9 @@ bun --hot ./index.ts
 
 For more information, read the Bun API docs in `node_modules/bun-types/docs/**.md`.
 
-## Line CLI - Linear Project Management
+## Line CLI - Universal Project Management
 
-This project includes **Line**, a comprehensive CLI tool for Linear project management that other Claude agents can use.
+This project includes **Line**, a universal project management CLI designed for AI orchestration that other Claude agents can use. Supports multiple backends including Linear (via MCP), GitHub Issues, and standalone mode.
 
 ### Quick Usage for Claude Agents
 
@@ -133,17 +133,19 @@ line teams
 line projects
 ```
 
-### MCP Linear Integration
+### Backend Integration
 
-Line automatically uses these MCP Linear commands:
+Line can integrate with multiple backends. For Linear, it uses these MCP commands:
 - `mcp__linear_server__list_issues` - List issues
 - `mcp__linear_server__get_issue` - Get issue details
 - `mcp__linear_server__list_my_issues` - Get my assigned issues
 - `mcp__linear_server__list_teams` - List teams
 - `mcp__linear_server__list_projects` - List projects
 
-### Features for Claude
+### Features for AI Assistants
 
+- **Universal Backend Support**: Linear (MCP), GitHub Issues, standalone mode
+- **AI-Optimized**: Built specifically for AI assistant integration
 - **Offline-first**: SQLite caching for fast access
 - **Smart sync**: Auto-refresh with 5-minute cache
 - **Rich output**: Colored, structured data for easy parsing

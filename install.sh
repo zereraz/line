@@ -44,7 +44,7 @@ fi
 
 # Fancy banner (Bun-style)
 print_banner() {
-    echo -e "${Bold_White}Line CLI${Color_Off} - Professional Linear project management"
+    echo -e "${Bold_White}Line CLI${Color_Off} - Universal project management for AI orchestration"
     echo -e "${Dim}Installing standalone binary (no dependencies required)${Color_Off}"
     echo
 }
@@ -354,7 +354,7 @@ show_instructions() {
     info_bold "  line -i           # Interactive mode"
     
     echo
-    echo -e "${Dim}Line CLI - Professional Linear project management${Color_Off}"
+    echo -e "${Dim}Line CLI - Universal project management for AI orchestration${Color_Off}"
 }
 
 # Uninstall function
@@ -422,7 +422,7 @@ case "${1:-}" in
         echo ""
         echo "Features:"
         echo "  - No runtime dependencies (standalone binary)"
-        echo "  - Professional Linear project management"
+        echo "  - Universal project management for AI orchestration"
         echo "  - Interactive mode with keyboard navigation"
         echo "  - SQLite caching for offline-first experience"
         echo ""

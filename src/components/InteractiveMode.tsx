@@ -6,7 +6,6 @@ import IssuesList from './IssuesList.tsx';
 import IssueDetails from './IssueDetails.tsx';
 import TeamsList from './TeamsList.tsx';
 import ProjectsList from './ProjectsList.tsx';
-import SearchResults from './SearchResults.tsx';
 
 type View = 
   | { type: 'dashboard' }
@@ -14,7 +13,6 @@ type View =
   | { type: 'issue'; id: string }
   | { type: 'teams' }
   | { type: 'projects' }
-  | { type: 'search'; query: string }
   | { type: 'menu' };
 
 interface MenuItem {
@@ -26,8 +24,6 @@ interface MenuItem {
 
 export default function InteractiveMode() {
   const [currentView, setCurrentView] = useState<View>({ type: 'dashboard' });
-  const [searchInput, setSearchInput] = useState('');
-  const [isSearchMode, setIsSearchMode] = useState(false);
   const [selectedIssueId, setSelectedIssueId] = useState('');
   const [isIssueMode, setIsIssueMode] = useState(false);
 
@@ -63,15 +59,6 @@ export default function InteractiveMode() {
       action: () => setCurrentView({ type: 'projects' })
     },
     {
-      key: 's',
-      label: 'Search',
-      description: 'Search issues by keyword',
-      action: () => {
-        setIsSearchMode(true);
-        setSearchInput('');
-      }
-    },
-    {
       key: 'i',
       label: 'Issue Details',
       description: 'View specific issue by ID',
@@ -83,24 +70,6 @@ export default function InteractiveMode() {
   ];
 
   useInput((input, key) => {
-    // Handle search mode
-    if (isSearchMode) {
-      if (key.return) {
-        if (searchInput.trim()) {
-          setCurrentView({ type: 'search', query: searchInput.trim() });
-        }
-        setIsSearchMode(false);
-        setSearchInput('');
-      } else if (key.escape) {
-        setIsSearchMode(false);
-        setSearchInput('');
-      } else if (key.backspace) {
-        setSearchInput(prev => prev.slice(0, -1));
-      } else if (input && input.length === 1) {
-        setSearchInput(prev => prev + input);
-      }
-      return;
-    }
 
     // Handle issue ID input mode
     if (isIssueMode) {
@@ -153,8 +122,6 @@ export default function InteractiveMode() {
         return <TeamsList />;
       case 'projects':
         return <ProjectsList />;
-      case 'search':
-        return <SearchResults query={currentView.query} />;
       case 'menu':
         return renderMenu();
       default:
@@ -208,7 +175,6 @@ export default function InteractiveMode() {
         case 'issue': return `Issue ${currentView.id}`;
         case 'teams': return 'Teams';
         case 'projects': return 'Projects';
-        case 'search': return `Search: ${currentView.query}`;
         case 'menu': return 'Main Menu';
         default: return 'Line CLI';
       }
@@ -229,15 +195,6 @@ export default function InteractiveMode() {
   };
 
   const renderInputPrompt = () => {
-    if (isSearchMode) {
-      return (
-        <Box borderStyle="single" borderColor="yellow" paddingX={1}>
-          <Text color="yellow">Search: </Text>
-          <Text>{searchInput}</Text>
-          <Text color="gray"> (Enter to search, ESC to cancel)</Text>
-        </Box>
-      );
-    }
 
     if (isIssueMode) {
       return (

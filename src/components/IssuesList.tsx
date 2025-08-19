@@ -2,7 +2,7 @@ import { Box, Text } from 'ink';
 import React, { useEffect, useState } from 'react';
 import { linearService } from '../services/linear.ts';
 import type { Issue } from '../utils/database.ts';
-import { Header, Section, StatusIndicator, PriorityBadge, LoadingSpinner, EmptyState, Divider, icons } from './ui/Theme.tsx';
+import { Header, Section, StatusIndicator, PriorityBadge, LoadingSpinner, EmptyState, Divider, icons, BtopDivider, InfoPanel, LabelsGroup } from './ui/Theme.tsx';
 import { SimpleTable } from './ui/Table.tsx';
 
 interface IssuesListProps {
@@ -53,8 +53,14 @@ export default function IssuesList({ filter = 'all' }: IssuesListProps) {
     {
       key: 'title',
       title: 'Title',
-      width: 45,
-      render: (value: string) => <Text>{value.length > 42 ? value.slice(0, 39) + '...' : value}</Text>
+      width: 35,
+      render: (value: string) => <Text>{value.length > 32 ? value.slice(0, 29) + '...' : value}</Text>
+    },
+    {
+      key: 'labels',
+      title: 'Labels',
+      width: 25,
+      render: (value: any, row: Issue) => <LabelsGroup labels={row.labels || []} maxDisplay={2} />
     },
     {
       key: 'state_name',
@@ -122,12 +128,12 @@ export default function IssuesList({ filter = 'all' }: IssuesListProps) {
         </Box>
       </Box>
 
-      <Divider char="─" color="gray" />
+      <BtopDivider color="gray" />
 
       {/* Issues Table */}
       {issues.length === 0 ? (
         <EmptyState 
-          icon={filter === 'me' ? '🎉' : '📋'}
+          icon={filter === 'me' ? icons.success : icons.issues}
           title={filter === 'me' ? 'All caught up!' : 'No issues found'}
           description={filter === 'me' ? 'No issues assigned to you' : 'Try creating some issues'}
         />
@@ -135,29 +141,29 @@ export default function IssuesList({ filter = 'all' }: IssuesListProps) {
         <>
           {/* Urgent Issues First */}
           {urgentIssues.length > 0 && (
-            <Section title="🔥 Urgent Issues" icon={icons.fire}>
-              <SimpleTable columns={columns} data={urgentIssues} />
-            </Section>
+            <InfoPanel title="Urgent Issues" variant="error" icon={icons.fire}>
+              <SimpleTable columns={columns} data={urgentIssues} variant="highlighted" />
+            </InfoPanel>
           )}
 
           {/* In Progress Issues */}
           {inProgressIssues.length > 0 && (
-            <Section title="🚀 In Progress" icon={icons.inProgress}>
-              <SimpleTable columns={columns} data={inProgressIssues} />
-            </Section>
+            <InfoPanel title="In Progress" variant="primary" icon={icons.inProgress}>
+              <SimpleTable columns={columns} data={inProgressIssues} variant="default" />
+            </InfoPanel>
           )}
 
           {/* Todo Issues */}
           {todoIssues.length > 0 && (
-            <Section title="📋 To Do" icon={icons.todo}>
-              <SimpleTable columns={columns} data={todoIssues} />
-            </Section>
+            <InfoPanel title="To Do" variant="default" icon={icons.todo}>
+              <SimpleTable columns={columns} data={todoIssues} variant="minimal" />
+            </InfoPanel>
           )}
 
           {/* Recently Completed */}
           {doneIssues.length > 0 && (
-            <Section title="✅ Recently Completed" icon={icons.done}>
-              <SimpleTable columns={columns} data={doneIssues.slice(0, 5)} />
+            <InfoPanel title="Recently Completed" variant="success" icon={icons.done}>
+              <SimpleTable columns={columns} data={doneIssues.slice(0, 5)} variant="minimal" />
               {doneIssues.length > 5 && (
                 <Box marginTop={1}>
                   <Text color="gray" dimColor>
@@ -165,32 +171,30 @@ export default function IssuesList({ filter = 'all' }: IssuesListProps) {
                   </Text>
                 </Box>
               )}
-            </Section>
+            </InfoPanel>
           )}
         </>
       )}
 
-      <Divider />
+      <BtopDivider title="COMMANDS" color="yellow" />
 
-      {/* Help Text */}
-      <Box flexDirection="column">
-        <Text color="yellow" bold>{icons.info} Quick Actions</Text>
-        <Box marginTop={1} flexDirection="column">
-          <Text color="gray">• </Text>
-          <Text color="cyan">line issue LIN-123</Text>
-          <Text color="gray"> - View issue details</Text>
-        </Box>
+      {/* Enhanced Help Text */}
+      <InfoPanel title="Quick Actions" variant="default" icon={icons.lightning}>
         <Box flexDirection="column">
-          <Text color="gray">• </Text>
-          <Text color="cyan">line search "keyword"</Text>
-          <Text color="gray"> - Search issues</Text>
+          <Box marginBottom={1}>
+            <Text color="cyan" bold>line issue LIN-123</Text>
+            <Text color="gray"> - View issue details</Text>
+          </Box>
+          <Box marginBottom={1}>
+            <Text color="cyan" bold>line search "keyword"</Text>
+            <Text color="gray"> - Search issues</Text>
+          </Box>
+          <Box>
+            <Text color="cyan" bold>line create</Text>
+            <Text color="gray"> - Create new issue</Text>
+          </Box>
         </Box>
-        <Box flexDirection="column">
-          <Text color="gray">• </Text>
-          <Text color="cyan">line create</Text>
-          <Text color="gray"> - Create new issue</Text>
-        </Box>
-      </Box>
+      </InfoPanel>
     </Box>
   );
 }

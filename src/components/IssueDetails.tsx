@@ -2,7 +2,8 @@ import { Box, Text } from 'ink';
 import React, { useEffect, useState } from 'react';
 import { linearService } from '../services/linear.ts';
 import type { Issue } from '../utils/database.ts';
-import { Header, Section, Card, StatusIndicator, PriorityBadge, LoadingSpinner, Divider, icons } from './ui/Theme.tsx';
+import { Header, Section, Card, StatusIndicator, PriorityBadge, LoadingSpinner, Divider, icons, LabelsGroup } from './ui/Theme.tsx';
+import Comments from './Comments.tsx';
 
 interface IssueDetailsProps {
   issueId: string;
@@ -74,6 +75,11 @@ export default function IssueDetails({ issueId }: IssueDetailsProps) {
           <Text color="gray"> • </Text>
           <Text color="magenta">{issue.assignee_name || 'Unassigned'}</Text>
         </Box>
+        {issue.labels && issue.labels.length > 0 && (
+          <Box marginTop={1}>
+            <LabelsGroup labels={issue.labels} maxDisplay={6} />
+          </Box>
+        )}
       </Box>
 
       <Divider char="═" color="cyan" />
@@ -144,6 +150,11 @@ export default function IssueDetails({ issueId }: IssueDetailsProps) {
 
       <Divider />
 
+      {/* Comments Section */}
+      <Comments issueId={issue.id} />
+
+      <Divider />
+
       {/* Quick Actions */}
       <Box flexDirection="column">
         <Text color="yellow" bold>{icons.lightning} Quick Actions</Text>
@@ -167,7 +178,7 @@ export default function IssueDetails({ issueId }: IssueDetailsProps) {
       {/* Footer */}
       <Box marginTop={2} justifyContent="center">
         <Text color="gray" dimColor>
-          {icons.sparkle} Line CLI • Beautiful Linear project management
+          {icons.sparkle} Line CLI • Universal project management
         </Text>
       </Box>
     </Box>

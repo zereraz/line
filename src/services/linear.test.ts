@@ -206,6 +206,145 @@ describe('Linear Service', () => {
     });
   });
 
+  describe('Label Operations', () => {
+    test('should fetch and cache labels', async () => {
+      const labels = await linearService.getLabels();
+      
+      expect(labels).toBeDefined();
+      expect(Array.isArray(labels)).toBe(true);
+      
+      // Since labels are synced via issues, we need to ensure issues are synced first
+      await linearService.getIssues();
+      const labelsAfterSync = await linearService.getLabels();
+      expect(labelsAfterSync.length).toBeGreaterThan(0);
+      
+      // Verify label structure
+      if (labelsAfterSync.length > 0) {
+        const firstLabel = labelsAfterSync[0];
+        expect(firstLabel.id).toBeTruthy();
+        expect(firstLabel.name).toBeTruthy();
+        expect(firstLabel.color).toBeTruthy();
+        expect(firstLabel.color).toMatch(/^#[0-9a-fA-F]{6}$/); // Hex color format
+      }
+    });
+
+    test('should return labels sorted by name', async () => {
+      await linearService.getIssues(); // Sync issues first to get labels
+      const labels = await linearService.getLabels();
+      
+      for (let i = 1; i < labels.length; i++) {
+        expect(labels[i].name >= labels[i-1].name).toBe(true);
+      }
+    });
+
+    test('should handle label sync with force refresh', async () => {
+      const labels1 = await linearService.getLabels();
+      const labels2 = await linearService.getLabels(true); // Force sync
+      
+      expect(Array.isArray(labels1)).toBe(true);
+      expect(Array.isArray(labels2)).toBe(true);
+    });
+
+    test('should include labels in issue data', async () => {
+      const issues = await linearService.getIssues();
+      
+      expect(issues).toBeDefined();
+      expect(Array.isArray(issues)).toBe(true);
+      
+      // Find an issue with labels
+      const issueWithLabels = issues.find(issue => issue.labels && issue.labels.length > 0);
+      expect(issueWithLabels).toBeDefined();
+      
+      if (issueWithLabels) {
+        expect(issueWithLabels.labels).toBeDefined();
+        expect(Array.isArray(issueWithLabels.labels)).toBe(true);
+        expect(issueWithLabels.labels!.length).toBeGreaterThan(0);
+        
+        // Verify label structure within issue
+        const firstLabel = issueWithLabels.labels![0];
+        expect(firstLabel.id).toBeTruthy();
+        expect(firstLabel.name).toBeTruthy();
+        expect(firstLabel.color).toBeTruthy();
+      }
+    });
+
+    test('should handle issues without labels', async () => {
+      const issues = await linearService.getIssues();
+      
+      // Test that issues can exist without labels
+      issues.forEach(issue => {
+        if (issue.labels) {
+          expect(Array.isArray(issue.labels)).toBe(true);
+        } else {
+          expect(issue.labels).toBeUndefined();
+        }
+      });
+    });
+  });
+
+  describe('Comment Operations', () => {
+    test('should fetch and cache comments for an issue', async () => {
+      const comments = await linearService.getComments('LIN-123');
+      
+      expect(comments).toBeDefined();
+      expect(Array.isArray(comments)).toBe(true);
+      expect(comments.length).toBeGreaterThan(0);
+      
+      // Verify comment structure
+      const firstComment = comments[0];
+      expect(firstComment.id).toBeTruthy();
+      expect(firstComment.issue_id).toBe('LIN-123');
+      expect(firstComment.author).toBeTruthy();
+      expect(firstComment.content).toBeTruthy();
+      expect(firstComment.created_at).toBeTruthy();
+      expect(firstComment.updated_at).toBeTruthy();
+    });
+
+    test('should get specific comment by ID', async () => {
+      // First ensure comments are synced
+      await linearService.getComments('LIN-123');
+      
+      const comment = await linearService.getComment('comment_LIN-123_1');
+      expect(comment).toBeDefined();
+      expect(comment?.id).toBe('comment_LIN-123_1');
+      expect(comment?.issue_id).toBe('LIN-123');
+    });
+
+    test('should add new comment to issue', async () => {
+      const newComment = await linearService.addComment('LIN-123', 'This is a test comment');
+      
+      expect(newComment).toBeDefined();
+      expect(newComment?.issue_id).toBe('LIN-123');
+      expect(newComment?.content).toBe('This is a test comment');
+      expect(newComment?.author).toBe('You');
+      expect(newComment?.id).toBeTruthy();
+    });
+
+    test('should add reply comment', async () => {
+      const replyComment = await linearService.addComment('LIN-123', 'This is a reply', 'parent-comment-id');
+      
+      expect(replyComment).toBeDefined();
+      expect(replyComment?.parent_id).toBe('parent-comment-id');
+      expect(replyComment?.content).toBe('This is a reply');
+    });
+
+    test('should handle threaded comments', async () => {
+      const comments = await linearService.getComments('LIN-123');
+      
+      // Check for comments with replies
+      const commentsWithReplies = comments.filter(comment => comment.replies && comment.replies.length > 0);
+      
+      if (commentsWithReplies.length > 0) {
+        const parentComment = commentsWithReplies[0];
+        expect(parentComment.replies).toBeDefined();
+        expect(Array.isArray(parentComment.replies)).toBe(true);
+        
+        const firstReply = parentComment.replies![0];
+        expect(firstReply.parent_id).toBe(parentComment.id);
+      }
+    });
+  });
+
   describe('Error Handling', () => {
     test('should handle network errors gracefully', async () => {
       // Since we're using mock data, this test simulates error handling
@@ -217,6 +356,26 @@ describe('Linear Service', () => {
       } catch (error) {
         // Should not throw errors, should return cached data or empty array
         expect(true).toBe(false); // This should not happen with current implementation
+      }
+    });
+
+    test('should handle label sync errors gracefully', async () => {
+      try {
+        const labels = await linearService.getLabels();
+        expect(Array.isArray(labels)).toBe(true);
+      } catch (error) {
+        // Should not throw errors, should return cached data or empty array
+        expect(true).toBe(false);
+      }
+    });
+
+    test('should handle comment sync errors gracefully', async () => {
+      try {
+        const comments = await linearService.getComments('invalid-issue-id');
+        expect(Array.isArray(comments)).toBe(true);
+      } catch (error) {
+        // Should not throw errors, should return empty array
+        expect(true).toBe(false);
       }
     });
   });

@@ -13,7 +13,7 @@ export default function ProjectsList() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Mock data - will replace with Linear MCP list_projects call
+    // Mock data - will integrate with backend APIs (Linear MCP, GitHub, etc.)
     setTimeout(() => {
       setProjects([
         { id: '1', name: 'Mobile App Redesign', status: 'In Progress', team: { name: 'Design' } },
